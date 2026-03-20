@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, VolumeX, Gift, MapPin, Eye, Link, Mail, Github } from 'lucide-react';
+import TabTypewriter from './components/TabTypewriter';
 
 export default function BiolinkInterface() {
   const [hasEntered, setHasEntered] = useState(false);
@@ -25,6 +26,28 @@ export default function BiolinkInterface() {
     "Fortnite Crew is handled within the Server",
     "Make A ticket in the server if you have questions!"
   ];
+
+  // 1. Create a state to hold the view count. It starts as null.
+  const [views, setViews] = useState(null);
+
+  // 2. Fetch the views as soon as the component loads on the screen
+  useEffect(() => {
+    const fetchAndIncrementViews = async () => {
+      try {
+        // We call the POST route to add +1 view and get the new total
+        const response = await fetch('/api/views', { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.views) {
+          setViews(data.views + 32874);
+        }
+      } catch (error) {
+        console.error("Error updating views:", error);
+      }
+    };
+
+    fetchAndIncrementViews();
+  }, []); // The empty bracket means this only runs once when the page loads
 
   // 1. ADVANCED TYPEWRITER EFFECT LOGIC
   useEffect(() => {
@@ -114,6 +137,8 @@ export default function BiolinkInterface() {
     // ---> ADDED 'no-scrollbar' to the main HTML/Body wrapper <---
     // ENLARGEMENT CHANGE: Main py-16 -> py-20
     <div className="min-h-screen relative flex flex-col items-center pt-4 pb-4 text-white selection:bg-white/30">
+
+      <TabTypewriter />
       
       {/* SOLID BACKGROUND */}
       <div className="fixed inset-0 bg-slate-950 -z-20"></div>
@@ -154,16 +179,18 @@ export default function BiolinkInterface() {
 
           {/* View Counter (Fixed) */}
           <div className="fixed bottom-1 left-6 z-20 flex items-center gap-2.5 px-4 py-2 bg-white/30 border border-white/80 rounded-lg backdrop-blur-md text-sm group cursor-help">
-              
-              {/* VIEWS TOOLTIP (TOP POSITION) */}
-              <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
-                <div className="bg-black/90 text-white text-[11px] tracking-widest px-3 py-1.5 border border-white/20 rounded whitespace-nowrap shadow-xl">
-                    PROFILE VIEWS
-                </div>
+  
+            {/* VIEWS TOOLTIP (TOP POSITION) */}
+            <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50">
+              <div className="bg-black/90 text-white text-[11px] tracking-widest px-3 py-1.5 border border-white/20 rounded whitespace-nowrap shadow-xl">
+                  PROFILE VIEWS
               </div>
+            </div>
 
             <Eye size={16} />
-            <span>32,853</span>
+            
+            <span>{views !== null ? views.toLocaleString() : "32,875"}</span>
+            
           </div>
 
           <a 
@@ -207,7 +234,7 @@ export default function BiolinkInterface() {
             {/* ENLARGEMENT CHANGE: text-3xl -> text-4xl */}
             <div className="relative group flex items-center justify-center">
 
-                <h1 className="text-4xl font-bold tracking-widest animate-rainbow uppercase">
+                <h1 className="text-4xl font-medium tracking-tighter animate-rainbow uppercase">
                   CLOWNEY
                 </h1>
             </div>

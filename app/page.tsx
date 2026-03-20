@@ -28,7 +28,7 @@ export default function BiolinkInterface() {
   ];
 
   // 1. Create a state to hold the view count. It starts as null.
-  const [views, setViews] = useState(null);
+  const [views, setViews] = useState<number | null>(null);
 
   // 2. Fetch the views as soon as the component loads on the screen
   useEffect(() => {

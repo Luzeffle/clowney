@@ -14,6 +14,10 @@ export default function BiolinkInterface() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [loopNum, setLoopNum] = useState(0);
   const [typingSpeed, setTypingSpeed] = useState(150);
+
+  // --- NEW LOADER STATES ---
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -26,6 +30,51 @@ export default function BiolinkInterface() {
     "Fortnite Crew is handled within the Server",
     "Make A ticket in the server if you have questions!"
   ];
+
+  // 3. ASSET PRELOADER LOGIC
+  useEffect(() => {
+    // List every heavy asset your site uses here
+    const assetsToLoad = [
+      "/background-video.mp4",
+      "https://r2.guns.lol/c0810cdf-5eb8-4121-810b-1e3da396b5f7.webp", // Profile pic
+      "/luigi.webp",
+      "/firstgif.gif", 
+      "/secondgif.gif", 
+      "/thirdgif.gif", 
+      "/fourthgif.gif", 
+      "/fifthgif.gif"
+    ];
+    
+    let loadedCount = 0;
+
+    const updateProgress = () => {
+      loadedCount++;
+      const currentProgress = Math.floor((loadedCount / assetsToLoad.length) * 100);
+      setLoadingProgress(currentProgress);
+      
+      // When everything is loaded, wait half a second then remove the loader
+      if (loadedCount === assetsToLoad.length) {
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
+      }
+    };
+
+    assetsToLoad.forEach((src) => {
+      if (src.endsWith('.mp4')) {
+        const video = document.createElement('video');
+        video.src = src;
+        video.oncanplaythrough = updateProgress;
+        video.onerror = updateProgress; // Advance anyway if it fails
+        video.load();
+      } else {
+        const img = new Image();
+        img.src = src;
+        img.onload = updateProgress;
+        img.onerror = updateProgress; // Advance anyway if it fails
+      }
+    });
+  }, []);
 
   // 1. Create a state to hold the view count. It starts as null.
   const [views, setViews] = useState<number | null>(null);
@@ -154,16 +203,40 @@ export default function BiolinkInterface() {
       </video>
 
       {/* INTRO SCREEN */}
+      {/* INTRO SCREEN */}
       {!hasEntered ? (
         <div 
-          onClick={handleEnter}
-          className={`fixed inset-0 z-50 flex flex-col items-center justify-center cursor-pointer bg-black/60 transition-all duration-1000 ease-in-out ${
+          // Only allow the click if loading is finished
+          onClick={!isLoading ? handleEnter : undefined}
+          className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/60 transition-all duration-1000 ease-in-out ${
             isEntering ? "opacity-0 backdrop-blur-none pointer-events-none" : "opacity-100 backdrop-blur-md"
-          }`}
+          } ${!isLoading ? "cursor-pointer" : "cursor-wait"}`}
         >
-          <h1 className="text-xl md:text-3xl text-white font-bold tracking-widest animate-pulse">
+          <h1 className="text-xl md:text-3xl text-white font-bold tracking-widest animate-pulse mb-8">
             私の店へようこそ
           </h1>
+
+          {/* DYNAMIC LOADER OR CLICK PROMPT */}
+          {isLoading ? (
+            <div className="flex flex-col items-center gap-4 w-64">
+              {/* The Progress Bar Container */}
+              <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
+                {/* The Progress Bar Fill */}
+                <div 
+                  className="h-full bg-white transition-all duration-300 ease-out"
+                  style={{ width: `${loadingProgress}%` }}
+                ></div>
+              </div>
+              {/* Percentage Text */}
+              <span className="text-[10px] tracking-[0.3em] text-white/50 font-silkscreen uppercase">
+                Loading Assets... {loadingProgress}%
+              </span>
+            </div>
+          ) : (
+            <span className="text-sm tracking-[0.2em] text-white/80 animate-bounce font-silkscreen mt-2">
+              [ CLICK TO ENTER ]
+            </span>
+          )}
         </div>
       ) : (
         
